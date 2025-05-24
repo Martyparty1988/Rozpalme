@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a0505">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.png">
     <title>Hravě & Dráždivě</title>
     <style>
         * {
@@ -68,6 +69,10 @@
             box-shadow: 0 5px 20px rgba(255, 0, 128, 0.3);
         }
 
+        .btn-primary:hover {
+            transform: scale(1.05);
+        }
+
         .btn-primary:active {
             transform: scale(0.98);
         }
@@ -80,7 +85,7 @@
 
         .mode-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin: 30px 0;
         }
@@ -165,6 +170,13 @@
             margin-bottom: 20px;
         }
 
+        .safe-word {
+            font-size: 1.1em;
+            color: #ff6b6b;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
         .timer {
             font-size: 3em;
             color: #ff0080;
@@ -187,7 +199,6 @@
             cursor: pointer;
             box-shadow: 0 5px 20px rgba(255, 0, 0, 0.5);
             z-index: 100;
-            display: none;
         }
 
         .screen {
@@ -218,6 +229,17 @@
             height: 20px;
         }
 
+        .safe-word-screen input {
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #ff4545;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1.1em;
+        }
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -227,11 +249,49 @@
         .pulse {
             animation: pulse 2s infinite;
         }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+
+            .wheel-center {
+                width: 60px;
+                height: 60px;
+                font-size: 1.2em;
+            }
+
+            .task-text {
+                font-size: 1.1em;
+            }
+
+            .timer {
+                font-size: 2.5em;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="home-screen" class="screen active">
+        <div id="safe-word-screen" class="screen active">
+            <div class="header">
+                <h1>Hravě & Dráždivě</h1>
+                <p class="subtitle">Nastavte bezpečné slovo</p>
+            </div>
+            <input type="text" id="safe-word-input" placeholder="Zadejte bezpečné slovo (např. STOP)">
+            <button class="btn btn-primary" onclick="saveSafeWord()">Pokračovat</button>
+        </div>
+
+        <div id="home-screen" class="screen">
             <div class="header">
                 <h1>Hravě & Dráždivě</h1>
                 <p class="subtitle">Objevujte intimitu společně</p>
@@ -290,144 +350,172 @@
                 </label>
             </div>
             
-            <button class="btn btn-primary" onclick="showWheel()">
-                Roztočit kolo vášně
-            </button>
-            <button class="btn btn-secondary" onclick="showScreen('home-screen')">
-                Zpět
-            </button>
+            <button class="btn btn-primary" onclick="showWheel()">Roztočit kolo vášně</button>
+            <button class="btn btn-secondary" onclick="showScreen('home-screen')">Zpět</button>
         </div>
 
         <div id="wheel-screen" class="screen">
             <div class="wheel-container">
                 <div class="wheel" id="wheel"></div>
-                <div class="wheel-center" onclick="spinWheel()">
-                    TOČ
-                </div>
+                <div class="wheel-center" onclick="spinWheel()">TOČ</div>
             </div>
             
             <div class="task-display" id="task-display">
                 <div class="task-text" id="task-text"></div>
+                <div class="safe-word" id="safe-word-display"></div>
                 <div class="timer" id="timer"></div>
-                <button class="btn btn-primary" onclick="nextTask()">
-                    Další úkol
-                </button>
+                <button class="btn btn-primary" onclick="nextTask()">Další úkol</button>
             </div>
             
-            <button class="btn btn-secondary" onclick="showScreen('home-screen')">
-                Ukončit hru
-            </button>
+            <button class="btn btn-secondary" onclick="showScreen('home-screen')">Ukončit hru</button>
         </div>
     </div>
 
-    <button class="stop-btn" id="stop-btn" onclick="emergencyStop()">
-        STOP
-    </button>
+    <button class="stop-btn" id="stop-btn" onclick="emergencyStop()">STOP</button>
 
-    const tasks = {
-    gentle: {
-        light: [
-            "Masíruj partnerovi ramena voňavým olejem po dobu 3 minut",
-            "Zašeptej partnerovi do ucha 3 věci, které na něm miluješ",
-            "Polib partnera na krk a jemně foukej na vlhké místo",
-            // Nový úkol
-            "Pomalu hlad partnera po vnitřní straně stehen, aniž se dotkneš intimních zón, 2 minuty",
-            // Nový úkol
-            "Udržuj oční kontakt a popisuj partnerovi, co s ním chceš dělat, bez doteků, 3 minuty"
-        ],
-        medium: [
-            "Masíruj partnerovi hýždě s teplým olejem",
-            "Použij peříčko k dráždění partnerovy pokožky od krku po stehna",
-            "Svlékni partnerovi jeden kus oblečení pouze ústy",
-            // Nový úkol
-            "Přikaž partnerovi tančit pro tebe a pomalu se svléknout do spodního prádla, 4 minuty",
-            // Nový úkol
-            "Hlaď partnera hedvábným šátkem po celém těle a šeptej mu svůdné pokyny, 3 minuty"
-        ]
-    },
-    spicy: {
-        light: [
-            "Jemně masíruj partnerovu intimní oblast přes spodní prádlo",
-            "Olízni partnerův prst a udržuj oční kontakt",
-            "Zašeptej partnerovi svou nejtajnější fantazii",
-            // Nový úkol
-            "Dráždi partnerovy bradavky přes látku košile vibrující hračkou, 2 minuty",
-            // Nový úkol
-            "Nanes na partnerův krk jedlou barvu a pomalu ji slízej, 3 minuty"
-        ],
-        medium: [
-            "Dráždi partnera kolem análu prstem s lubrikantem",
-            "Použij kostku ledu k dráždění partnerových bradavek a břicha",
-            "Svázej partnerovi ruce šátkem a líbej jeho celé tělo",
-            // Nový úkol
-            "Přikaž partnerovi kleknout a políbit tě na stehna, poté ho odměň vibrátorem, 4 minuty",
-            // Nový úkol
-            "Střídej horký vosk a chladný led na partnerových hýždích, 3 minuty"
-        ],
-        hard: [
-            "Použij malý anální kolík s dostatkem lubrikantu",
-            "Střídej orální stimulaci s jemným drážděním análu",
-            "Ovládej partnerovo potěšení - řekni mu, kdy se může dotknout",
-            // Nový úkol
-            "Spoutej partnera k posteli a dráždi ho vibrující hračkou, dokud nezačne prosit, 5 minut",
-            // Nový úkol
-            "Přikaž partnerovi, aby plnil tři tvé intimní příkazy, a poté ho ‘potrestej’ lehkým výpraskem, 6 minut"
-        ]
-    },
-    roleplay: {
-        light: [
-            "Jsi masér/ka a partner je tvůj klient - masáž celého těla",
-            "Hrajte si na první rande - flirtujte jako teenageři",
-            "Partner je tvůj osobní trenér - ukaž mu své protahovací cviky",
-            // Nový úkol
-            "Jsi fotograf a partner je tvůj model – řiď ho do svůdných póz, 3 minuty",
-            // Nový úkol
-            "Hrajte si na cizince v baru – svádějte se pohledy a dvojsmyslnými frázemi, 4 minuty"
-        ],
-        medium: [
-            "Doktor a pacient - důkladná ‘prohlídka’ intimních partií",
-            "Vládce a služebník - služebník musí plnit všechny příkazy",
-            "Učitel a žák - ‘lekce’ análního potěšení",
-            // Nový úkol
-            "Jsi šéf/ka a partner je tvůj asistent – musí tě ‘usmířit’ svůdnými doteky, 5 minut",
-            // Nový úkol
-            "Piráti na lodi – ‘zajatý’ partner musí splnit tvé námořnické rozkazy, 4 minuty"
-        ]
-    },
-    bdsm: {
-        light: [
-            "Spoutej partnerovi zápěstí hedvábným šátkem",
-            "Zakryj partnerovi oči a dráždi ho různými texturami",
-            "Lehký výprask rukou na hýždě - 10 plácnutí",
-            // Nový úkol
-            "Použij masku na oči a dráždi partnera peříčkem na intimních zónách, 3 minuty",
-            // Nový úkol
-            "Přikaž partnerovi, aby se nehnul, zatímco ho hladíš lehkým bičíkem, 3 minuty"
-        ],
-        medium: [
-            "Použij malý anální kolík během orálního sexu",
-            "Střídej potěšení a lehkou bolest podle partnerových reakcí",
-            "Ovládej partnerovo dýchání během intimních chvil",
-            // Nový úkol
-            "Spoutej partnerovi ruce a nohy a použij vibrátor na jeho citlivá místa, 5 minut",
-            // Nový úkol
-            "Kápni nízkoteplotní vosk na partnerovy hýždě a poté ho odměň masáží, 4 minuty"
-        ],
-        hard: [
-            "Kompletní smyslová deprivace - maska, sluchátka, pouta",
-            "Použij větší anální hračku s vibracemi",
-            "Intenzivní hra dominance - partner musí prosit o dovolení",
-            // Nový úkol
-            "Spoutej partnera k posteli, zakryj mu oči a střídej výprask plácačkou s vibracemi, 7 minut",
-            // Nový úkol
-            "Přikaž partnerovi, aby plnil tvé příkazy, a ‘muč’ ho dlouhým drážděním bez vyvrcholení, 8 minut"
-        ]
-    }
-};
+    <script>
+        const tasks = {
+            gentle: {
+                light: [
+                    "Masíruj partnerovi ramena voňavým olejem po dobu 3 minut",
+                    "Zašeptej partnerovi do ucha 3 věci, které na něm miluješ",
+                    "Polib partnera na krk a jemně foukej na vlhké místo",
+                    "Pomalu hlad partnera po vnitřní straně stehen, aniž se dotkneš intimních zón, 2 minuty",
+                    "Udržuj oční kontakt a popisuj partnerovi, co s ním chceš dělat, bez doteků, 3 minuty",
+                    "Pomalu líbej partnera od ucha přes krk až k rameni, 3 minuty",
+                    "Svlékni partnerovi ponožky zubama a jemně masíruj jeho chodidla, 2 minuty",
+                    // Nové úkoly
+                    "Nech partnera, aby ti šeptem popsal svou nejdivočejší fantazii, 3 minuty",
+                    "Hlaď partnera hedvábnou rukavicí po břiše a kolem pasu, 3 minuty",
+                    "Polib partnera na břicho a střídej polibky s lehkým šimráním, angelo 2 minuty"
+                ],
+                medium: [
+                    "Masíruj partnerovi hýždě s teplým olejem",
+                    "Použij peříčko k dráždění partnerovy pokožky od krku po stehna",
+                    "Svlékni partnerovi jeden kus oblečení pouze ústy",
+                    "Přikaž partnerovi tančit pro tebe a pomalu se svléknout do spodního prádla, 4 minuty",
+                    "Hlaď partnera hedvábným šátkem po celém těle a šeptej mu svůdné pokyny, 3 minuty",
+                    // Nové úkoly
+                    "Přikaž partnerovi, aby tě masíroval podle tvých pokynů, a odměň ho polibky, 4 minuty",
+                    "Nanes na partnerovy hýždě masážní olej a střídej masáž s lehkými plácnutími, 3 minuty",
+                    "Pomalu svlékni partnera a dráždi jeho kůži konečky prstů, 4 minuty",
+                    "Zavři partnerovi oči šátkem a jemně ho líbej přes spodní prádlo, 3 minuty"
+                ]
+            },
+            spicy: {
+                light: [
+                    "Jemně masíruj partnerovu intimní oblast přes spodní prádlo",
+                    "Olízni partnerův prst a udržuj oční kontakt",
+                    "Zašeptej partnerovi svou nejtajnější fantazii",
+                    "Dráždi partnerovy bradavky přes látku košile vibrující hračkou, 2 minuty",
+                    "Nanes na partnerův krk jedlou barvu a pomalu ji slízej, 3 minuty",
+                    "Pomalu lízej partnerovy ušní lalůčky a šeptej mu dvojsmyslná slova, 2 minuty",
+                    // Nové úkoly
+                    "Dráždi partnera přes spodní prádlo lehkými kousnutími na vnitřní stehna, 3 minuty",
+                    "Nanes jedlou šlehačku na partnerův hrudník a slízej ji s očním kontaktem, 3 minuty",
+                    "Přikaž partnerovi, aby tě líbal na krku, zatímco ho hladíš po intimních zónách, 3 minuty"
+                ],
+                medium: [
+                    "Dráždi partnera kolem análu prstem s lubrikantem",
+                    "Použij kostku ledu k dráždění partnerových bradavek a břicha",
+                    "Svázej partnerovi ruce šátkem a líbej jeho celé tělo",
+                    "Přikaž partnerovi kleknout a políbit tě na stehna, poté ho odměň vibrátorem, 4 minuty",
+                    "Střídej horký vosk a chladný led na partnerových hýždích, 3 minuty",
+                    // Nové úkoly
+                    "Přikaž partnerovi, aby tě uspokojil ústy na tvých citlivých místech, 4 minuty",
+                    "Použij vibrující hračku na partnerových intimních zónách přes spodní prádlo, 4 minuty",
+                    "Spoutej partnerovi ruce a dráždi ho lehkým špatněním rukou na hýždě, 3 minuty"
+                ],
+                hard: [
+                    "Použij malý anální kolík s dostatkem lubrikantu",
+                    "Střídej orální stimulaci s jemným drážděním análu",
+                    "Ovládej partnerovo potěšení - řekni mu, kdy se může dotknout",
+                    "Spoutej partnera k posteli a dráždi ho vibrující hračkou, dokud nezačne prosit, 5 minut",
+                    "Přikaž partnerovi, aby plnil tři tvé intimní příkazy, a poté ho ‘potrestej’ lehkým výpraskem, 6 minut",
+                    // Nové úkoly
+                    "Zakryj partnerovi oči a střídej vibrátor s kapkami nízkoteplotního vosku na jeho tělo, 5 minut",
+                    "Přikaž partnerovi klečet a prosit o tvé doteky, poté ho dráždi pomalu vibrátorem, 6 minut",
+                    "Spoutej partnera a střídej lehký výprask plácačkou s orální stimulací, 7 minut"
+                ]
+            },
+            roleplay: {
+                light: [
+                    "Jsi masér/ka a partner je tvůj klient - masáž celého těla",
+                    "Hrajte si na první rande - flirtujte jako teenageři",
+                    "Partner je tvůj osobní trenér - ukaž mu své protahovací cviky",
+                    "Jsi fotograf a partner je tvůj model – řiď ho do svůdných póz, 3 minuty",
+                    "Hrajte si na cizince v baru – svádějte se pohledy a dvojsmyslnými frázemi, 4 minuty",
+                    // Nové úkoly
+                    "Jsi tanečník/tanečnice a partner je tvůj divák – předveď mu svůdný tanec, 3 minuty",
+                    "Hrajte si na umělce a múzu – partner pózuje, zatímco ho svádíš doteky, 3 minuty"
+                ],
+                medium: [
+                    "Doktor a pacient - důkladná ‘prohlídka’ intimních partií",
+                    "Vládce a služebník - služebník musí plnit všechny příkazy",
+                    "Učitel a žák - ‘lekce’ análního potěšení",
+                    "Jsi šéf/ka a partner je tvůj asistent – musí tě ‘usmířit’ svůdnými doteky, 5 minut",
+                    "Piráti na lodi – ‘zajatý’ partner musí splnit tvé námořnické rozkazy, 4 minuty",
+                    // Nové úkoly
+                    "Jsi král/královna a partner je tvůj poddaný – plní tvé svůdné rozkazy, 4 minuty",
+                    "Hrajte si na detektiva a podezřelého – ‘vyslýchej’ partnera doteky, 5 minut"
+                ],
+                hard: [
+                    // Nové úkoly
+                    "Jsi strážce vězení a partner je vězeň – ‘trestej’ ho svůdnými příkazy, 6 minut",
+                    "Jsi lovec odměn a partner je tvůj úlovek – spoutáš ho a dráždíš vibrátorem, 6 minut",
+                    "Jsi pán/paní temného hradu – partner je tvůj služebník, který plní intimní úkoly, 7 minut"
+                ]
+            },
+            bdsm: {
+                light: [
+                    "Spoutej partnerovi zápěstí hedvábným šátkem",
+                    "Zakryj partnerovi oči a dráždi ho různými texturami",
+                    "Lehký výprask rukou na hýždě - 10 plácnutí",
+                    "Použij masku na oči a dráždi partnera peříčkem na intimních zónách, 3 minuty",
+                    "Přikaž partnerovi, aby se nehnul, zatímco ho hladíš lehkým bičíkem, 3 minuty",
+                    // Nové úkoly
+                    "Zavři partnerovi oči šátkem a dráždi ho ledem na bradavkách, 3 minuty",
+                    "Spoutej partnerovi ruce nad hlavou a líbej ho od krku po stehna, 3 minuty",
+                    "Přikaž partnerovi kleknout a políbit ti ruce, zatímco ho hladíš peříčkem, 3 minuty"
+                ],
+                medium: [
+                    "Použij malý anální kolík během orálního sexu",
+                    "Střídej potěšení a lehkou bolest podle partnerových reakcí",
+                    "Ovládej partnerovo dýchání během intimních chvil",
+                    "Spoutej partnerovi ruce a nohy a použij vibrátor na jeho citlivá místa, 5 minut",
+                    "Kápni nízkoteplotní vosk na partnerovy hýždě a poté ho odměň masáží, 4 minuty",
+                    // Nové úkoly
+                    "Přikaž partnerovi, aby ti podal šátek na spoutání, a pak ho svázej, 4 minuty",
+                    "Použij lehký bičík na partnerovy hýždě a střídej s vibrující hračkou, 5 minut",
+                    "Zakryj partnerovi oči a přikaž mu, aby se tě dotýkal jen na tvůj pokyn, 4 minuty",
+                    "Spoutej partnerovi ruce a dráždi ho pomalými doteky na intimních místech, 5 minut"
+                ],
+                hard: [
+                    "Kompletní smyslová deprivace - maska, sluchátka, pouta",
+                    "Použij větší anální hračku s vibracemi",
+                    "Intenzivní hra dominance - partner musí prosit o dovolení",
+                    "Spoutej partnera k posteli, zakryj mu oči a střídej výprask plácačkou s vibracemi, 7 minut",
+                    "Přikaž partnerovi, aby plnil tvé příkazy, a ‘muč’ ho dlouhým drážděním bez vyvrcholení, 8 minut",
+                    // Nové úkoly
+                    "Spoutej partnera a použij střídavě led, vosk a vibrátor na jeho tělo, 7 minut",
+                    "Přikaž partnerovi, aby ti sloužil jako tvůj ‘otrok’ a plnil intimní příkazy, 8 minut",
+                    "Zakryj partnerovi oči a uši, spoutaj ho a dráždi ho bičíkem a hračkou, 7 minut",
+                    "Přikaž partnerovi, aby tě prosil o každý dotek, a střídej lehký výprask s polibky, 8 minut"
+                ]
+            }
+        };
 
         let currentMode = 'gentle';
         let currentIntensity = 'light';
         let timerInterval;
+        let safeWord = localStorage.getItem('safeWord') || 'STOP';
+
+        function saveSafeWord() {
+            const input = document.getElementById('safe-word-input').value.trim();
+            safeWord = input || 'STOP';
+            localStorage.setItem('safeWord', safeWord);
+            showScreen('home-screen');
+        }
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -435,6 +523,8 @@
             
             if (screenId === 'wheel-screen') {
                 document.getElementById('stop-btn').style.display = 'block';
+                document.getElementById('wheel-container').style.display = 'block';
+                document.getElementById('task-display').style.display = 'none';
             } else {
                 document.getElementById('stop-btn').style.display = 'none';
             }
@@ -447,6 +537,10 @@
 
         function showWheel() {
             currentIntensity = document.querySelector('input[name="intensity"]:checked').value;
+            if (!tasks[currentMode][currentIntensity] || tasks[currentMode][currentIntensity].length === 0) {
+                alert('Tato kombinace režimu a intenzity nemá žádné úkoly. Vyberte jinou.');
+                return;
+            }
             showScreen('wheel-screen');
         }
 
@@ -462,19 +556,28 @@
 
         function showTask() {
             const taskList = tasks[currentMode][currentIntensity];
+            if (!taskList || taskList.length === 0) {
+                alert('Žádné úkoly nejsou k dispozici. Vraťte se zpět.');
+                showScreen('mode-screen');
+                return;
+            }
             const task = taskList[Math.floor(Math.random() * taskList.length)];
             
             document.getElementById('task-text').textContent = task;
-            document.querySelector('.wheel-container').style.display = 'none';
+            document.getElementById('safe-word-display').textContent = `Bezpečné slovo: ${safeWord}`;
+            document.getElementById('wheel-container').style.display = 'none';
             document.getElementById('task-display').style.display = 'block';
             
-            startTimer(180);
+            const timeMatch = task.match(/(\d+) minut/);
+            const time = timeMatch ? parseInt(timeMatch[1]) * 60 : (currentIntensity === 'light' ? 180 : currentIntensity === 'medium' ? 240 : 360);
+            startTimer(time);
         }
 
         function startTimer(seconds) {
             let time = seconds;
             const timerEl = document.getElementById('timer');
             
+            clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const mins = Math.floor(time / 60);
                 const secs = time % 60;
@@ -485,6 +588,8 @@
                     if ('vibrate' in navigator) {
                         navigator.vibrate([200, 100, 200]);
                     }
+                    alert('Čas vypršel! Přejete si další úkol?');
+                    nextTask();
                 }
                 time--;
             }, 1000);
@@ -492,13 +597,16 @@
 
         function nextTask() {
             clearInterval(timerInterval);
-            showTask();
+            document.getElementById('wheel-container').style.display = 'block';
+            document.getElementById('task-display').style.display = 'none';
+            document.getElementById('wheel').style.transform = 'rotate(0deg)';
         }
 
         function emergencyStop() {
             clearInterval(timerInterval);
             if (confirm('Opravdu chcete ukončit hru?')) {
                 showScreen('home-screen');
+                document.getElementById('wheel').style.transform = 'rotate(0deg)';
             }
         }
 
@@ -506,8 +614,14 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
                     .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed'));
+                    .catch(err => console.log('Service Worker registration failed:', err));
             });
+        }
+
+        // Inicializace bezpečného slova
+        if (safeWord !== 'STOP') {
+            document.getElementById('safe-word-screen').classList.remove('active');
+            document.getElementById('home-screen').classList.add('active');
         }
     </script>
 </body>
