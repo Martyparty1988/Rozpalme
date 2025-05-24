@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a0505">
+    <link rel="manifest" href="manifest.json">
+    <title>Hravě & Dráždivě</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a0505 0%, #2d0a0a 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ff4545, #ff0080);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #ff6b6b;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff0080, #ff4545);
+            color: white;
+            box-shadow: 0 5px 20px rgba(255, 0, 128, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ff6b6b;
+            border: 2px solid #ff4545;
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .mode-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 69, 69, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-card:hover {
+            background: rgba(255, 69, 69, 0.1);
+            border-color: #ff4545;
+            transform: translateY(-5px);
+        }
+
+        .mode-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 40px auto;
+            display: none;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #ff0080 0deg 60deg,
+                #ff4545 60deg 120deg,
+                #ff6b6b 120deg 180deg,
+                #ff0080 180deg 240deg,
+                #ff4545 240deg 300deg,
+                #ff6b6b 300deg 360deg
+            );
+            box-shadow: 0 0 50px rgba(255, 0, 128, 0.5);
+            position: relative;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: #1a0505;
+            border-radius: 50%;
+            border: 3px solid #ff0080;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .task-display {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff4545;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .task-text {
+            font-size: 1.3em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 3em;
+            color: #ff0080;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .stop-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            background: #ff0000;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.5);
+            z-index: 100;
+            display: none;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .intensity-selector {
+            margin: 30px 0;
+        }
+
+        .intensity-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .intensity-option input {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="home-screen" class="screen active">
+            <div class="header">
+                <h1>Hravě & Dráždivě</h1>
+                <p class="subtitle">Objevujte intimitu společně</p>
+            </div>
+            
+            <button class="btn btn-primary pulse" onclick="showScreen('mode-screen')">
+                🔥 ROZPÁL MĚ
+            </button>
+            
+            <div class="mode-grid">
+                <div class="mode-card" onclick="startMode('gentle')">
+                    <div class="mode-icon">🌹</div>
+                    <h3>Jemný start</h3>
+                </div>
+                <div class="mode-card" onclick="startMode('spicy')">
+                    <div class="mode-icon">🌶️</div>
+                    <h3>Pikantní výzva</h3>
+                </div>
+                <div class="mode-card" onclick="startMode('roleplay')">
+                    <div class="mode-icon">🎭</div>
+                    <h3>Roleplay</h3>
+                </div>
+                <div class="mode-card" onclick="startMode('bdsm')">
+                    <div class="mode-icon">⛓️</div>
+                    <h3>BDSM zóna</h3>
+                </div>
+            </div>
+        </div>
+
+        <div id="mode-screen" class="screen">
+            <div class="header">
+                <h2>Vyber intenzitu</h2>
+            </div>
+            
+            <div class="intensity-selector">
+                <label class="intensity-option">
+                    <input type="radio" name="intensity" value="light" checked>
+                    <div>
+                        <h3>🌸 Light</h3>
+                        <p>Jemné objevování, masáže, lehké hrátky</p>
+                    </div>
+                </label>
+                <label class="intensity-option">
+                    <input type="radio" name="intensity" value="medium">
+                    <div>
+                        <h3>🔥 Medium</h3>
+                        <p>Odvážnější experimenty, malé pomůcky</p>
+                    </div>
+                </label>
+                <label class="intensity-option">
+                    <input type="radio" name="intensity" value="hard">
+                    <div>
+                        <h3>🌋 Hard</h3>
+                        <p>Intenzivní zážitky, pokročilé scénáře</p>
+                    </div>
+                </label>
+            </div>
+            
+            <button class="btn btn-primary" onclick="showWheel()">
+                Roztočit kolo vášně
+            </button>
+            <button class="btn btn-secondary" onclick="showScreen('home-screen')">
+                Zpět
+            </button>
+        </div>
+
+        <div id="wheel-screen" class="screen">
+            <div class="wheel-container">
+                <div class="wheel" id="wheel"></div>
+                <div class="wheel-center" onclick="spinWheel()">
+                    TOČ
+                </div>
+            </div>
+            
+            <div class="task-display" id="task-display">
+                <div class="task-text" id="task-text"></div>
+                <div class="timer" id="timer"></div>
+                <button class="btn btn-primary" onclick="nextTask()">
+                    Další úkol
+                </button>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="showScreen('home-screen')">
+                Ukončit hru
+            </button>
+        </div>
+    </div>
+
+    <button class="stop-btn" id="stop-btn" onclick="emergencyStop()">
+        STOP
+    </button>
+
+    <script>
+        const tasks = {
+            gentle: {
+                light: [
+                    "Masíruj partnerovi ramena voňavým olejem po dobu 3 minut",
+                    "Zašeptej partnerovi do ucha 3 věci, které na něm miluješ",
+                    "Polib partnera na krk a jemně foukej na vlhké místo"
+                ],
+                medium: [
+                    "Masíruj partnerovi hýždě s teplým olejem",
+                    "Použij peříčko k dráždění partnerovy pokožky od krku po stehna",
+                    "Svlékni partnerovi jeden kus oblečení pouze ústy"
+                ]
+            },
+            spicy: {
+                light: [
+                    "Jemně masíruj partnerovu intimní oblast přes spodní prádlo",
+                    "Olízni partnerův prst a udržuj oční kontakt",
+                    "Zašeptej partnerovi svou nejtajnější fantazii"
+                ],
+                medium: [
+                    "Dráždi partnera kolem análu prstem s lubrikantem",
+                    "Použij kostku ledu k dráždění partnerových bradavek a břicha",
+                    "Svázej partnerovi ruce šátkem a líbej jeho celé tělo"
+                ],
+                hard: [
+                    "Použij malý anální kolík s dostatkem lubrikantu",
+                    "Střídej orální stimulaci s jemným drážděním análu",
+                    "Ovládej partnerovo potěšení - řekni mu, kdy se může dotknout"
+                ]
+            },
+            roleplay: {
+                light: [
+                    "Jsi masér/ka a partner je tvůj klient - masáž celého těla",
+                    "Hrajte si na prvního rande - flirtujte jako teenageři",
+                    "Partner je tvůj osobní trenér - ukaž mu své protahovací cviky"
+                ],
+                medium: [
+                    "Doktor a pacient - důkladná 'prohlídka' intimních partií",
+                    "Vládce a služebník - služebník musí plnit všechny příkazy",
+                    "Učitel a žák - 'lekce' análního potěšení"
+                ]
+            },
+            bdsm: {
+                light: [
+                    "Spoutej partnerovi zápěstí hedvábným šátkem",
+                    "Zakryj partnerovi oči a dráždi ho různými texturami",
+                    "Lehký výprask rukou na hýždě - 10 plácnutí"
+                ],
+                medium: [
+                    "Použij malý anální kolík během orálního sexu",
+                    "Střídej potěšení a lehkou bolest podle partnerových reakcí",
+                    "Ovládej partnerovo dýchání během intimních chvil"
+                ],
+                hard: [
+                    "Kompletní smyslová deprivace - maska, sluchátka, pouta",
+                    "Použij větší anální hračku s vibracemi",
+                    "Intenzivní hra dominance - partner musí prosit o dovolení"
+                ]
+            }
+        };
+
+        let currentMode = 'gentle';
+        let currentIntensity = 'light';
+        let timerInterval;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'wheel-screen') {
+                document.getElementById('stop-btn').style.display = 'block';
+                document.getElementById('wheel-container').style.display = 'block';
+            } else {
+                document.getElementById('stop-btn').style.display = 'none';
+            }
+        }
+
+        function startMode(mode) {
+            currentMode = mode;
+            showScreen('mode-screen');
+        }
+
+        function showWheel() {
+            currentIntensity = document.querySelector('input[name="intensity"]:checked').value;
+            showScreen('wheel-screen');
+            document.querySelector('.wheel-container').style.display = 'block';
+        }
+
+        function spinWheel() {
+            const wheel = document.getElementById('wheel');
+            const rotation = Math.floor(Math.random() * 360) + 1440;
+            wheel.style.transform = `rotate(${rotation}deg)`;
+            
+            setTimeout(() => {
+                showTask();
+            }, 4000);
+        }
+
+        function showTask() {
+            const taskList = tasks[currentMode][currentIntensity];
+            const task = taskList[Math.floor(Math.random() * taskList.length)];
+            
+            document.getElementById('task-text').textContent = task;
+            document.querySelector('.wheel-container').style.display = 'none';
+            document.getElementById('task-display').style.display = 'block';
+            
+            startTimer(180);
+        }
+
+        function startTimer(seconds) {
+            let time = seconds;
+            const timerEl = document.getElementById('timer');
+            
+            timerInterval = setInterval(() => {
+                const mins = Math.floor(time / 60);
+                const secs = time % 60;
+                timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([200, 100, 200]);
+                    }
+                }
+                time--;
+            }, 1000);
+        }
+
+        function nextTask() {
+            clearInterval(timerInterval);
+            showTask();
+        }
+
+        function emergencyStop() {
+            clearInterval(timerInterval);
+            if (confirm('Opravdu chcete ukončit hru?')) {
+                showScreen('home-screen');
+            }
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
