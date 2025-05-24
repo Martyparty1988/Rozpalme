@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a0505">
-    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="./manifest.json">
     <title>Hravě & Dráždivě</title>
     <style>
         * {
@@ -109,7 +111,6 @@
             width: 300px;
             height: 300px;
             margin: 40px auto;
-            display: none;
         }
 
         .wheel {
@@ -395,7 +396,6 @@
             
             if (screenId === 'wheel-screen') {
                 document.getElementById('stop-btn').style.display = 'block';
-                document.getElementById('wheel-container').style.display = 'block';
             } else {
                 document.getElementById('stop-btn').style.display = 'none';
             }
@@ -409,7 +409,6 @@
         function showWheel() {
             currentIntensity = document.querySelector('input[name="intensity"]:checked').value;
             showScreen('wheel-screen');
-            document.querySelector('.wheel-container').style.display = 'block';
         }
 
         function spinWheel() {
@@ -465,7 +464,11 @@
         }
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            });
         }
     </script>
 </body>
